@@ -153,17 +153,24 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const { pathname } = url;
 
+  // Build marker: OLHO_DAGUA_BUILD_2026_09_03_1040
+  if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Content-Length': INDEX_HTML.length,
+      'Cache-Control': 'no-store',
+      'X-Olho-Dagua-Build': 'OLHO_DAGUA_BUILD_2026_09_03_1040'
+    });
+    return res.end(INDEX_HTML);
+  }
+  if (req.method === 'GET' && pathname === '/api/version') {
+    return sendJson(res, 200, { ok: true, build: 'OLHO_DAGUA_BUILD_2026_09_03_1040' });
+  }
+
   try {
     // -------- Arquivos estáticos --------
     if (req.method === 'GET' && pathname.startsWith('/uploads/')) {
       return serveStatic(req, res, UPLOADS_DIR, pathname.replace('/uploads/', ''));
-    }
-    if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Content-Length': INDEX_HTML.length,
-      });
-      return res.end(INDEX_HTML);
     }
     if (req.method === 'GET' && !pathname.startsWith('/api/')) {
       return serveStatic(req, res, PUBLIC_DIR, pathname);
