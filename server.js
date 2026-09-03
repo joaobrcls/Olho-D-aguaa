@@ -26,7 +26,7 @@ const { DatabaseSync } = require('node:sqlite');
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '0.0.0.0';
 const ROOT = __dirname;
-const PUBLIC_DIR = path.join(ROOT, 'public');
+const PUBLIC_DIR = ROOT;
 // Em produção, defina STORAGE_DIR para o ponto de montagem do volume persistente
 // (ex.: /data no Railway). Localmente, continua usando a pasta do projeto.
 const STORAGE_DIR = process.env.STORAGE_DIR ? path.resolve(process.env.STORAGE_DIR) : ROOT;
