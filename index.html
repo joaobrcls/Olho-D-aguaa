@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olho D'Água</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFF6F4; --paper-2:#E2EEEB; --ink:#0B2B2E; --ink-soft:#4C6B6A;
+    --teal:#0E5C57; --teal-deep:#083F3C; --aqua:#1FB6AC; --aqua-soft:#CFEDE9;
+    --amber:#E4A63C; --amber-soft:#FBEBD2; --red:#C4483A; --red-soft:#F6DAD6;
+    --line:#C9DDD9; --white:#FFFFFF;
+    --font-display:'Space Grotesk', sans-serif; --font-body:'IBM Plex Sans', sans-serif; --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--paper); font-family:var(--font-body); color:var(--ink);}
+  body{display:flex; justify-content:center; padding:24px 12px;}
+  .app{width:100%; max-width:900px;}
+  .badge-api{display:block; text-align:center; font-family:var(--font-mono); font-size:11px; color:var(--teal); background:var(--aqua-soft); border-radius:100px; padding:6px 10px; margin-bottom:12px;}
+
+  .switcher{display:flex; gap:8px; margin-bottom:16px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:5px;}
+  .switcher button{flex:1; border:none; background:none; padding:10px; border-radius:10px; font-family:var(--font-display); font-weight:600; font-size:13px; color:var(--ink-soft); cursor:pointer;}
+  .switcher button.active{background:var(--teal); color:#fff;}
+  .hidden{display:none !important;}
+
+  .phone{max-width:420px; margin:0 auto; background:var(--white); border-radius:28px; border:1px solid var(--line); box-shadow:0 30px 60px -30px rgba(11,43,46,.35); overflow:hidden; position:relative;}
+  .topbar{background:linear-gradient(160deg, var(--teal-deep), var(--teal) 70%); color:#fff; padding:20px 20px 26px; position:relative; overflow:hidden;}
+  .topbar::after{content:""; position:absolute; right:-40px; top:-40px; width:160px; height:160px; border:1.5px solid rgba(255,255,255,.14); border-radius:50%;}
+  .brand{display:flex; align-items:center; gap:10px; position:relative; z-index:1;}
+  .brand svg{width:26px; height:26px; flex-shrink:0;}
+  .brand-name{font-family:var(--font-display); font-weight:700; font-size:19px;}
+  .brand-tag{font-size:11px; color:var(--aqua-soft); font-family:var(--font-mono); letter-spacing:.5px;}
+  .hello{margin-top:18px; position:relative; z-index:1;}
+  .hello .hi{font-size:13px; color:var(--aqua-soft); font-family:var(--font-mono);}
+  .hello .name{font-family:var(--font-display); font-weight:600; font-size:22px;}
+
+  .screen{padding:20px 18px 100px; min-height:480px;}
+  .screen.hidden{display:none;}
+
+  .meter-card{background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:18px 16px 14px; margin-top:-18px; position:relative; z-index:2;}
+  .meter-top{display:flex; justify-content:space-between; align-items:center;}
+  .tier-badge{display:inline-flex; align-items:center; gap:6px; background:var(--teal); color:#fff; font-family:var(--font-mono); font-size:11px; padding:4px 10px; border-radius:100px; font-weight:600;}
+  .rank{font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);}
+  .gauge-wrap{display:flex; flex-direction:column; align-items:center; margin-top:6px;}
+  .gauge-readout{text-align:center; margin-top:-58px;}
+  .gauge-pts{font-family:var(--font-mono); font-weight:600; font-size:30px; color:var(--teal-deep); line-height:1;}
+  .gauge-pts span{font-size:13px; color:var(--ink-soft); font-weight:500;}
+  .gauge-next{font-size:11.5px; color:var(--ink-soft); margin-top:4px; font-family:var(--font-mono);}
+  .stat-row{display:flex; gap:10px; margin-top:16px;}
+  .stat{flex:1; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px;}
+  .stat-num{font-family:var(--font-mono); font-weight:600; font-size:18px; color:var(--teal-deep);}
+  .stat-label{font-size:10.5px; color:var(--ink-soft); margin-top:2px; line-height:1.3;}
+
+  .section-title{font-family:var(--font-display); font-weight:600; font-size:15px; margin:22px 0 10px; display:flex; align-items:center; gap:8px; justify-content:space-between;}
+  .section-title .dot{width:6px; height:6px; border-radius:50%; background:var(--amber);}
+  .refresh-btn{border:1px solid var(--line); background:#fff; border-radius:100px; font-size:11px; font-family:var(--font-mono); padding:4px 10px; cursor:pointer; color:var(--teal);}
+
+  .report-item{display:flex; gap:12px; padding:12px; border:1px solid var(--line); border-radius:14px; margin-bottom:10px; background:#fff;}
+  .report-thumb{width:44px; height:44px; border-radius:10px; background:var(--paper-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .report-thumb img{width:100%; height:100%; object-fit:cover;}
+  .report-body{flex:1; min-width:0;}
+  .report-addr{font-size:13px; font-weight:600;}
+  .report-meta{font-size:11px; color:var(--ink-soft); margin-top:2px; font-family:var(--font-mono);}
+  .status{font-size:10px; font-family:var(--font-mono); font-weight:600; padding:3px 8px; border-radius:100px; display:inline-block; margin-top:6px;}
+  .status.analise{background:var(--amber-soft); color:#8A6218;}
+  .status.confirmado{background:var(--aqua-soft); color:var(--teal-deep);}
+  .status.rejeitado{background:var(--red-soft); color:var(--red);}
+  .pts-tag{font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--teal); white-space:nowrap;}
+  .empty{text-align:center; padding:36px 10px; color:var(--ink-soft); font-size:13px;}
+
+  label{font-size:12px; font-weight:600; display:block; margin:14px 0 6px;}
+  input[type=text], textarea, select{width:100%; border:1px solid var(--line); border-radius:12px; padding:11px 12px; font-family:var(--font-body); font-size:13.5px; color:var(--ink); background:#fff; resize:none;}
+  textarea{min-height:70px;}
+  .loc-row{display:flex; gap:8px;}
+  .loc-row input{flex:1;}
+  .btn-icon{border:1px solid var(--line); background:#fff; border-radius:12px; width:44px; flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .btn-icon svg{width:18px; height:18px; stroke:var(--teal);}
+  .sev-options{display:flex; gap:8px;}
+  .sev-opt{flex:1; border:1.5px solid var(--line); border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer; font-size:11.5px; font-weight:600; color:var(--ink-soft);}
+  .sev-opt .pt{display:block; font-family:var(--font-mono); font-size:10px; margin-top:2px;}
+  .sev-opt.active{border-color:var(--teal); background:var(--aqua-soft); color:var(--teal-deep);}
+  .photo-drop{border:1.5px dashed var(--line); border-radius:14px; padding:14px; text-align:center; cursor:pointer; background:var(--paper-2);}
+  .photo-drop svg{width:20px; height:20px; stroke:var(--teal); margin-bottom:4px;}
+  .photo-drop p{font-size:12px; color:var(--ink-soft); margin:0;}
+  .photo-drop.attached{background:var(--aqua-soft); border-style:solid; border-color:var(--teal);}
+  .btn-primary{width:100%; background:var(--teal); color:#fff; border:none; border-radius:14px; padding:14px; font-family:var(--font-display); font-weight:600; font-size:14.5px; margin-top:20px; cursor:pointer;}
+  .btn-primary:disabled{background:var(--line); color:var(--ink-soft); cursor:not-allowed;}
+
+  .reward-card{border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; background:#fff; display:flex; gap:12px; align-items:center;}
+  .reward-icon{width:40px; height:40px; border-radius:12px; background:var(--paper-2); flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .reward-body{flex:1;}
+  .reward-name{font-size:13.5px; font-weight:600;}
+  .reward-desc{font-size:11px; color:var(--ink-soft); margin-top:2px; line-height:1.35;}
+  .reward-cost{font-family:var(--font-mono); font-size:11px; color:var(--teal); margin-top:5px; font-weight:600;}
+  .btn-redeem{border:none; border-radius:10px; padding:8px 12px; font-family:var(--font-mono); font-size:11px; font-weight:600; background:var(--teal); color:#fff; cursor:pointer; white-space:nowrap;}
+  .btn-redeem:disabled{background:var(--paper-2); color:var(--ink-soft); cursor:not-allowed;}
+
+  .navbar{position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--line); display:flex; padding:8px 6px 12px;}
+  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:var(--ink-soft); font-size:10px; cursor:pointer; padding:6px 0;}
+  .nav-btn svg{width:20px; height:20px; stroke:var(--ink-soft); fill:none;}
+  .nav-btn.active{color:var(--teal);}
+  .nav-btn.active svg{stroke:var(--teal);}
+
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px); background:var(--teal-deep); color:#fff; padding:12px 16px; border-radius:12px; font-size:12.5px; opacity:0; transition:all .35s ease; pointer-events:none; z-index:999; max-width:340px; text-align:center;}
+  .toast.show{transform:translateX(-50%) translateY(0); opacity:1;}
+
+  .onboard-overlay{position:absolute; inset:0; background:rgba(8,32,30,.85); display:flex; align-items:center; justify-content:center; z-index:40; padding:24px;}
+  .onboard-card{background:#fff; border-radius:18px; padding:22px; width:100%;}
+  .onboard-card h3{font-family:var(--font-display); margin:0 0 4px; font-size:16px;}
+  .onboard-card p{font-size:12.5px; color:var(--ink-soft); margin:0 0 14px;}
+
+  .dashboard{background:#fff; border:1px solid var(--line); border-radius:20px; overflow:hidden;}
+  .dash-head{background:linear-gradient(160deg, var(--teal-deep), var(--teal) 70%); color:#fff; padding:18px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+  .dash-head .brand-name{font-family:var(--font-display); font-weight:700; font-size:17px;}
+  .role-select{background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; border-radius:10px; padding:7px 10px; font-family:var(--font-mono); font-size:11px;}
+  .dash-tabs{display:flex; border-bottom:1px solid var(--line); overflow-x:auto;}
+  .dash-tab{padding:13px 18px; font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent;}
+  .dash-tab.active{color:var(--teal); border-color:var(--teal);}
+  .dash-body{padding:18px 20px 24px;}
+
+  .queue-row{display:flex; gap:12px; align-items:center; padding:13px; border:1px solid var(--line); border-radius:14px; margin-bottom:10px;}
+  .queue-photo{width:48px; height:48px; border-radius:10px; object-fit:cover; flex-shrink:0; background:var(--paper-2);}
+  .queue-info{flex:1; min-width:0;}
+  .queue-client{font-size:13px; font-weight:600;}
+  .queue-meta{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .queue-actions{display:flex; gap:8px;}
+  .btn-sm{border:none; border-radius:9px; padding:8px 12px; font-size:11.5px; font-weight:600; cursor:pointer; font-family:var(--font-mono);}
+  .btn-confirm{background:var(--aqua-soft); color:var(--teal-deep);}
+  .btn-reject{background:var(--red-soft); color:var(--red);}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.4px; padding:8px 10px; border-bottom:1px solid var(--line);}
+  td{padding:10px 10px; border-bottom:1px solid var(--paper-2);}
+  .badge-tier{font-family:var(--font-mono); font-size:10px; background:var(--paper-2); padding:3px 8px; border-radius:100px;}
+  .badge-close{background:var(--amber-soft); color:#8A6218; font-family:var(--font-mono); font-size:10px; padding:3px 8px; border-radius:100px;}
+
+  .reward-row{display:flex; gap:10px; align-items:center; padding:12px; border:1px solid var(--line); border-radius:14px; margin-bottom:10px;}
+  .reward-row input[type=text]{font-size:12.5px;}
+  .reward-row .rname{flex:2;}
+  .reward-row .rcost{width:80px;}
+  .reward-toggle{width:20px; height:20px;}
+  .btn-del{background:none; border:none; color:var(--red); cursor:pointer; font-size:16px; padding:0 6px;}
+  .add-reward-form{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .add-reward-form input{flex:1; min-width:120px;}
+  .btn-add{background:var(--teal); color:#fff; border:none; border-radius:10px; padding:0 16px; font-family:var(--font-mono); font-size:12px; cursor:pointer;}
+
+  .stat-cards{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px;}
+  .stat-card{flex:1; min-width:130px; background:var(--paper-2); border-radius:14px; padding:14px;}
+  .stat-card .n{font-family:var(--font-mono); font-weight:600; font-size:22px; color:var(--teal-deep);}
+  .stat-card .l{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="badge-api">🟢 Conectado à API real em <span id="apiOrigin"></span> · banco de dados SQLite · fotos salvas em /uploads</div>
+
+  <div class="switcher">
+    <button data-role="cliente" class="active">Sou cliente</button>
+    <button data-role="colaborador">Sou colaborador</button>
+  </div>
+
+  <!-- ================= CLIENTE ================= -->
+  <div class="phone" id="clientApp">
+    <div class="onboard-overlay" id="onboardOverlay">
+      <div class="onboard-card">
+        <h3>Bem-vindo ao Olho D'Água</h3>
+        <p>Como podemos te chamar? (isso identifica seus registros e pontos no banco de dados)</p>
+        <input type="text" id="onboardName" placeholder="Seu nome ou matrícula">
+        <button class="btn-primary" id="onboardBtn" style="margin-top:12px">Entrar</button>
+      </div>
+    </div>
+
+    <div class="topbar">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M12 3s6.5 7.2 6.5 11.5A6.5 6.5 0 0 1 5.5 14.5C5.5 10.2 12 3 12 3z"/></svg>
+        <div><div class="brand-name">Olho D'Água</div><div class="brand-tag">DENÚNCIAS · RECOMPENSAS</div></div>
+      </div>
+      <div class="hello"><div class="hi">Olá,</div><div class="name" id="userNameLabel">visitante</div></div>
+    </div>
+
+    <div class="screen" id="c-screen-home">
+      <div class="meter-card">
+        <div class="meter-top">
+          <span class="tier-badge" id="tierBadge">BRONZE</span>
+          <span class="rank" id="rankLabel"></span>
+        </div>
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 220 130" width="230">
+            <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#D9E8E5" stroke-width="14" stroke-linecap="round"/>
+            <path id="gaugeArc" d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#1FB6AC" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 400"/>
+            <line id="needle" x1="110" y1="115" x2="110" y2="40" stroke="#083F3C" stroke-width="3" stroke-linecap="round" style="transform-origin:110px 115px;"/>
+            <circle cx="110" cy="115" r="6" fill="#083F3C"/>
+          </svg>
+          <div class="gauge-readout">
+            <div class="gauge-pts"><span id="ptsVal">0</span><span> pts</span></div>
+            <div class="gauge-next" id="nextTierLabel"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><div class="stat-num" id="statReports">0</div><div class="stat-label">vazamentos<br>reportados</div></div>
+          <div class="stat"><div class="stat-num" id="statConfirmed">0</div><div class="stat-label">confirmados<br>pela equipe</div></div>
+          <div class="stat"><div class="stat-num" id="statLiters">0</div><div class="stat-label">litros/dia<br>estimados</div></div>
+        </div>
+      </div>
+      <div class="section-title"><span style="display:flex;align-items:center;gap:8px"><span class="dot"></span>Últimos registros</span><button class="refresh-btn" onclick="syncClient()">Atualizar</button></div>
+      <div id="homeReportsList"></div>
+    </div>
+
+    <div class="screen hidden" id="c-screen-report">
+      <div class="section-title" style="margin-top:6px"><span class="dot"></span>Reportar vazamento</div>
+      <label>Foto do vazamento</label>
+      <div id="photoDropZone" class="photo-drop">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" style="margin:0 auto"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        <p id="photoDropText">Toque para anexar uma foto</p>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+      <label>Localização</label>
+      <div class="loc-row">
+        <input type="text" id="addrInput" placeholder="Rua, número, bairro...">
+        <button class="btn-icon" id="gpsBtn" title="Usar minha localização">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+      </div>
+      <label>Gravidade</label>
+      <div class="sev-options" id="sevOptions">
+        <div class="sev-opt" data-sev="leve">Gotejamento<span class="pt">+10 pts</span></div>
+        <div class="sev-opt" data-sev="moderado">Moderado<span class="pt">+20 pts</span></div>
+        <div class="sev-opt" data-sev="grave">Rompimento<span class="pt">+35 pts</span></div>
+      </div>
+      <label>Descrição (opcional)</label>
+      <textarea id="descInput" placeholder="Ex: água acumulando na calçada desde ontem..."></textarea>
+      <button class="btn-primary" id="submitReportBtn" disabled>Enviar denúncia</button>
+    </div>
+
+    <div class="screen hidden" id="c-screen-rewards">
+      <div class="section-title" style="margin-top:6px"><span class="dot"></span>Troque seus pontos</div>
+      <div id="rewardsList"></div>
+    </div>
+
+    <div class="screen hidden" id="c-screen-history">
+      <div class="section-title" style="margin-top:6px"><span class="dot"></span>Meus registros</div>
+      <div id="historyList"></div>
+    </div>
+
+    <div class="navbar">
+      <button class="nav-btn active" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Início</button>
+      <button class="nav-btn" data-tab="report"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Reportar</button>
+      <button class="nav-btn" data-tab="rewards"><svg viewBox="0 0 24 24"><path d="M20 12v9H4v-9"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>Prêmios</button>
+      <button class="nav-btn" data-tab="history"><svg viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></svg>Registros</button>
+    </div>
+  </div>
+
+  <!-- ================= COLABORADOR ================= -->
+  <div class="dashboard hidden" id="adminApp">
+    <div class="dash-head">
+      <div class="brand-name">Olho D'Água · Painel</div>
+      <select class="role-select" id="roleSelect">
+        <option value="atendente">Atendente</option>
+        <option value="supervisor">Supervisor</option>
+        <option value="admin" selected>Administrador</option>
+      </select>
+    </div>
+    <div class="dash-tabs" id="dashTabs">
+      <div class="dash-tab active" data-tab="fila">Fila de denúncias</div>
+      <div class="dash-tab" data-tab="clientes">Clientes</div>
+      <div class="dash-tab" data-tab="recompensas">Recompensas</div>
+      <div class="dash-tab" data-tab="relatorios">Relatórios</div>
+    </div>
+    <div class="dash-body">
+      <div id="a-fila"></div>
+      <div id="a-clientes" class="hidden"></div>
+      <div id="a-recompensas" class="hidden"></div>
+      <div id="a-relatorios" class="hidden"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span id="toastMsg"></span></div>
+</div>
+
+<script>
+const API = window.location.origin;
+document.getElementById('apiOrigin').textContent = API;
+const TIERS = [{name:'BRONZE', min:0}, {name:'PRATA', min:100}, {name:'OURO', min:250}, {name:'PLATINA', min:500}];
+const SEV_LITERS = {leve:180, moderado:600, grave:2200};
+const SEV_PTS = {leve:10, moderado:20, grave:35};
+
+let profile = JSON.parse(localStorage.getItem('olhodagua-profile') || 'null');
+let pendingPhotoBase64 = null;
+let selectedSev = null;
+
+// ---------- API helpers ----------
+async function api(path, opts){
+  const res = await fetch(API + path, {
+    headers:{'Content-Type':'application/json'},
+    ...opts,
+  });
+  if(!res.ok){ const e = await res.json().catch(()=>({error:'erro desconhecido'})); throw new Error(e.error || 'erro na API'); }
+  return res.json();
+}
+
+function currentTier(pts){ let t=TIERS[0]; for(const tier of TIERS) if(pts>=tier.min) t=tier; return t; }
+function nextTier(pts){ const cur=currentTier(pts); const idx=TIERS.findIndex(t=>t.name===cur.name); return TIERS[idx+1]||null; }
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show'); clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ---------- ROLE SWITCH ----------
+document.querySelectorAll('.switcher button').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    document.querySelectorAll('.switcher button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('clientApp').classList.toggle('hidden', btn.dataset.role!=='cliente');
+    document.getElementById('adminApp').classList.toggle('hidden', btn.dataset.role!=='colaborador');
+    if(btn.dataset.role==='cliente') syncClient(); else renderAdmin();
+  });
+});
+
+// ---------- ONBOARDING ----------
+document.getElementById('onboardBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('onboardName').value.trim();
+  if(!name){ showToast('Digite seu nome para continuar'); return; }
+  try{
+    const client = await api('/api/onboard', {method:'POST', body: JSON.stringify({name})});
+    profile = client;
+    localStorage.setItem('olhodagua-profile', JSON.stringify(profile));
+    document.getElementById('onboardOverlay').classList.add('hidden');
+    syncClient();
+  }catch(e){ showToast('Erro ao conectar com a API: ' + e.message); }
+});
+
+// ---------- NAV CLIENTE ----------
+document.querySelectorAll('#clientApp .nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#clientApp .nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#clientApp .screen').forEach(s=>s.classList.add('hidden'));
+    document.getElementById('c-screen-'+btn.dataset.tab).classList.remove('hidden');
+    syncClient();
+  });
+});
+
+// ---------- FORM ----------
+document.getElementById('photoDropZone').addEventListener('click', ()=>document.getElementById('photoInput').click());
+document.getElementById('photoInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    pendingPhotoBase64 = reader.result; // já vem como data:image/...;base64,...
+    document.getElementById('photoDropZone').classList.add('attached');
+    document.getElementById('photoDropText').textContent = 'Foto anexada ✓ (será enviada com a denúncia)';
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById('gpsBtn').addEventListener('click', ()=>{
+  if(!navigator.geolocation){ showToast('Geolocalização indisponível'); return; }
+  showToast('Obtendo localização...');
+  navigator.geolocation.getCurrentPosition(
+    pos=>{ document.getElementById('addrInput').value = `Lat ${pos.coords.latitude.toFixed(4)}, Lon ${pos.coords.longitude.toFixed(4)}`; checkFormValid(); },
+    ()=> showToast('Não foi possível obter sua localização')
+  );
+});
+document.querySelectorAll('.sev-opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('.sev-opt').forEach(o=>o.classList.remove('active'));
+    opt.classList.add('active');
+    selectedSev = opt.dataset.sev;
+    checkFormValid();
+  });
+});
+document.getElementById('addrInput').addEventListener('input', checkFormValid);
+function checkFormValid(){ document.getElementById('submitReportBtn').disabled = !(document.getElementById('addrInput').value.trim() && selectedSev); }
+
+document.getElementById('submitReportBtn').addEventListener('click', async ()=>{
+  const addr = document.getElementById('addrInput').value.trim();
+  const description = document.getElementById('descInput').value.trim();
+  if(!addr || !selectedSev || !profile) return;
+  try{
+    await api('/api/reports', {method:'POST', body: JSON.stringify({
+      clientId: profile.id, clientName: profile.name, addr, sev: selectedSev, description,
+      photoBase64: pendingPhotoBase64,
+    })});
+    showToast('Denúncia enviada e salva no banco de dados!');
+    document.getElementById('addrInput').value=''; document.getElementById('descInput').value='';
+    document.querySelectorAll('.sev-opt').forEach(o=>o.classList.remove('active'));
+    selectedSev=null; pendingPhotoBase64=null;
+    document.getElementById('photoDropZone').classList.remove('attached');
+    document.getElementById('photoDropText').textContent='Toque para anexar uma foto';
+    document.getElementById('submitReportBtn').disabled = true;
+    document.querySelector('#clientApp .nav-btn[data-tab="home"]').click();
+  }catch(e){ showToast('Erro ao enviar: ' + e.message); }
+});
+
+// ---------- RENDER CLIENTE ----------
+function statusLabel(s){
+  if(s==='analise') return {cls:'analise', text:'Em análise'};
+  if(s==='confirmado') return {cls:'confirmado', text:'Confirmado'};
+  return {cls:'rejeitado', text:'Não confirmado'};
+}
+function reportItemHtml(r){
+  const s = statusLabel(r.status);
+  const sevLabel = {leve:'Gotejamento', moderado:'Vazamento moderado', grave:'Rompimento'}[r.sev];
+  return `<div class="report-item">
+    <div class="report-thumb">${r.photo_url ? `<img src="${API+r.photo_url}">` : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E5C57" stroke-width="1.6"><path d="M12 2s6.5 7.2 6.5 11.5A6.5 6.5 0 0 1 5.5 13.5C5.5 9.2 12 2 12 2z"/></svg>`}</div>
+    <div class="report-body">
+      <div class="report-addr">${r.addr}</div>
+      <div class="report-meta">${sevLabel} · ${new Date(r.created_at).toLocaleDateString('pt-BR')}${r.reason ? ' · '+r.reason : ''}</div>
+      <span class="status ${s.cls}">${s.text}</span>
+    </div>
+    <div class="pts-tag">${r.status==='confirmado' ? '+'+r.pts : (r.status==='analise' ? '—' : '0')} pts</div>
+  </div>`;
+}
+async function syncClient(){
+  if(!profile){ document.getElementById('onboardOverlay').classList.remove('hidden'); return; }
+  document.getElementById('onboardOverlay').classList.add('hidden');
+  document.getElementById('userNameLabel').textContent = profile.name;
+  try{
+    const [clients, myReports, rewards] = await Promise.all([
+      api('/api/clients'),
+      api('/api/reports?clientId=' + encodeURIComponent(profile.id)),
+      api('/api/rewards'),
+    ]);
+    const me = clients.find(c=>c.id===profile.id) || {points:0};
+    const cur = currentTier(me.points), nxt = nextTier(me.points);
+    document.getElementById('tierBadge').textContent = cur.name;
+    document.getElementById('ptsVal').textContent = me.points;
+    document.getElementById('nextTierLabel').textContent = nxt ? `faltam ${nxt.min-me.points} pts para ${nxt.name}` : 'nível máximo atingido!';
+    const rangeMin=cur.min, rangeMax = nxt?nxt.min:cur.min+250;
+    let pct = Math.max(0, Math.min(1,(me.points-rangeMin)/(rangeMax-rangeMin)));
+    document.getElementById('gaugeArc').setAttribute('stroke-dasharray', `${Math.PI*90*pct} 400`);
+    document.getElementById('needle').style.transform = `rotate(${-90+pct*180}deg)`;
+    const rank = clients.sort((a,b)=>b.points-a.points).findIndex(c=>c.id===profile.id)+1;
+    document.getElementById('rankLabel').textContent = `#${rank} de ${clients.length}`;
+
+    const confirmed = myReports.filter(r=>r.status==='confirmado');
+    document.getElementById('statReports').textContent = myReports.length;
+    document.getElementById('statConfirmed').textContent = confirmed.length;
+    document.getElementById('statLiters').textContent = confirmed.reduce((s,r)=>s+(SEV_LITERS[r.sev]||0),0).toLocaleString('pt-BR');
+
+    const emptyMsg = `<div class="empty">Nenhum vazamento reportado ainda.<br>Toque em "Reportar" para começar.</div>`;
+    document.getElementById('homeReportsList').innerHTML = myReports.length ? myReports.slice(0,3).map(reportItemHtml).join('') : emptyMsg;
+    document.getElementById('historyList').innerHTML = myReports.length ? myReports.map(reportItemHtml).join('') : emptyMsg;
+
+    const active = rewards.filter(r=>r.active);
+    const wrap = document.getElementById('rewardsList');
+    wrap.innerHTML = active.map(r=>{
+      const can = me.points >= r.cost;
+      return `<div class="reward-card">
+        <div class="reward-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E5C57" stroke-width="1.6"><path d="M20 12v9H4v-9"/><rect x="2" y="7" width="20" height="5"/></svg></div>
+        <div class="reward-body"><div class="reward-name">${r.name}</div><div class="reward-desc">${r.description||''}</div><div class="reward-cost">${r.cost} pts</div></div>
+        <button class="btn-redeem" data-id="${r.id}" ${can?'':'disabled'}>${can?'Resgatar':'Bloqueado'}</button>
+      </div>`;
+    }).join('') || `<div class="empty">Nenhuma recompensa disponível no momento.</div>`;
+    wrap.querySelectorAll('.btn-redeem').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        try{
+          await api('/api/redeem', {method:'POST', body: JSON.stringify({clientId:profile.id, rewardId:Number(btn.dataset.id)})});
+          showToast('Recompensa resgatada!');
+          syncClient();
+        }catch(e){ showToast('Erro: ' + e.message); }
+      });
+    });
+  }catch(e){ showToast('Não foi possível falar com a API: ' + e.message); }
+}
+
+// ---------- ADMIN ----------
+document.getElementById('roleSelect').addEventListener('change', renderAdmin);
+document.querySelectorAll('.dash-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    ['fila','clientes','recompensas','relatorios'].forEach(k=>document.getElementById('a-'+k).classList.add('hidden'));
+    document.getElementById('a-'+tab.dataset.tab).classList.remove('hidden');
+    renderAdmin();
+  });
+});
+
+function applyRolePermissions(){
+  const role = document.getElementById('roleSelect').value;
+  const perms = {atendente:['fila'], supervisor:['fila','clientes','relatorios'], admin:['fila','clientes','recompensas','relatorios']};
+  document.querySelectorAll('.dash-tab').forEach(t=>{ t.style.display = perms[role].includes(t.dataset.tab) ? '' : 'none'; });
+  const activeVisible = [...document.querySelectorAll('.dash-tab')].find(t=>t.classList.contains('active') && t.style.display!=='none');
+  if(!activeVisible){
+    document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
+    const target = perms[role][0];
+    document.querySelector(`.dash-tab[data-tab="${target}"]`).classList.add('active');
+    ['fila','clientes','recompensas','relatorios'].forEach(k=>document.getElementById('a-'+k).classList.add('hidden'));
+    document.getElementById('a-'+target).classList.remove('hidden');
+  }
+}
+
+async function renderAdmin(){
+  applyRolePermissions();
+  await Promise.all([renderFila(), renderClientesTab(), renderRecompensasTab(), renderRelatoriosTab()]);
+}
+
+async function renderFila(){
+  const el = document.getElementById('a-fila');
+  try{
+    const pending = await api('/api/reports?status=analise');
+    if(pending.length===0){ el.innerHTML = `<div class="empty">Nenhuma denúncia pendente. Tudo em dia!</div>`; return; }
+    const sevLabel = {leve:'Gotejamento', moderado:'Vazamento moderado', grave:'Rompimento'};
+    el.innerHTML = pending.map(r=>`
+      <div class="queue-row">
+        ${r.photo_url ? `<img class="queue-photo" src="${API+r.photo_url}">` : `<div class="queue-photo"></div>`}
+        <div class="queue-info">
+          <div class="queue-client">${r.client_name}</div>
+          <div class="queue-meta">${r.addr} · ${sevLabel[r.sev]} · +${r.pts} pts · ${new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
+          ${r.description ? `<div class="queue-meta">"${r.description}"</div>` : ''}
+        </div>
+        <div class="queue-actions">
+          <button class="btn-sm btn-confirm" data-id="${r.id}" data-action="confirmado">Confirmar</button>
+          <button class="btn-sm btn-reject" data-id="${r.id}" data-action="rejeitado">Rejeitar</button>
+        </div>
+      </div>`).join('');
+    el.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        try{
+          await api(`/api/reports/${btn.dataset.id}`, {method:'PATCH', body: JSON.stringify({status: btn.dataset.action, reason: btn.dataset.action==='rejeitado' ? 'não confirmado em campo' : null})});
+          showToast(btn.dataset.action==='confirmado' ? 'Denúncia confirmada e pontos creditados.' : 'Denúncia marcada como não confirmada.');
+          renderAdmin();
+        }catch(e){ showToast('Erro: ' + e.message); }
+      });
+    });
+  }catch(e){ el.innerHTML = `<div class="empty">Erro ao carregar fila: ${e.message}</div>`; }
+}
+
+async function renderClientesTab(){
+  const el = document.getElementById('a-clientes');
+  try{
+    const [clients, rewards] = await Promise.all([api('/api/clients'), api('/api/rewards')]);
+    if(clients.length===0){ el.innerHTML = `<div class="empty">Nenhum cliente cadastrado ainda.</div>`; return; }
+    const activeCosts = rewards.filter(r=>r.active).map(r=>r.cost).sort((a,b)=>a-b);
+    el.innerHTML = `<table><thead><tr><th>Cliente</th><th>Pontos</th><th>Nível</th><th>Status</th></tr></thead><tbody>
+      ${clients.map(c=>{
+        const nextCost = activeCosts.find(cost=>cost>c.points);
+        const gap = nextCost ? nextCost-c.points : null;
+        const close = gap!==null && gap<=15;
+        return `<tr><td>${c.name}</td><td>${c.points}</td><td><span class="badge-tier">${c.tier}</span></td>
+          <td>${close ? `<span class="badge-close">faltam ${gap} pts p/ prêmio</span>` : '—'}</td></tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }catch(e){ el.innerHTML = `<div class="empty">Erro: ${e.message}</div>`; }
+}
+
+async function renderRecompensasTab(){
+  const el = document.getElementById('a-recompensas');
+  el.innerHTML = `<div id="rewardRows"></div>
+    <div class="add-reward-form">
+      <input type="text" id="newRewardName" placeholder="Nome da recompensa">
+      <input type="text" id="newRewardCost" placeholder="Custo em pts" style="max-width:110px">
+      <button class="btn-add" id="addRewardBtn">Adicionar</button>
+    </div>`;
+  try{
+    const rewards = await api('/api/rewards');
+    const rows = document.getElementById('rewardRows');
+    rows.innerHTML = rewards.map(r=>`
+      <div class="reward-row" data-id="${r.id}">
+        <input type="checkbox" class="reward-toggle" ${r.active?'checked':''}>
+        <input type="text" class="rname" value="${r.name}">
+        <input type="text" class="rcost" value="${r.cost}">
+        <button class="btn-del">✕</button>
+      </div>`).join('');
+    rows.querySelectorAll('.reward-row').forEach(row=>{
+      const id = row.dataset.id;
+      row.querySelector('.reward-toggle').addEventListener('change', async (e)=>{
+        await api(`/api/rewards/${id}`, {method:'PATCH', body: JSON.stringify({active: e.target.checked})});
+        showToast('Recompensa atualizada.'); renderClientesTab();
+      });
+      row.querySelector('.rname').addEventListener('change', async (e)=>{
+        await api(`/api/rewards/${id}`, {method:'PATCH', body: JSON.stringify({name: e.target.value})});
+        showToast('Nome atualizado.');
+      });
+      row.querySelector('.rcost').addEventListener('change', async (e)=>{
+        await api(`/api/rewards/${id}`, {method:'PATCH', body: JSON.stringify({cost: Number(e.target.value)})});
+        showToast('Custo atualizado.');
+      });
+      row.querySelector('.btn-del').addEventListener('click', async ()=>{
+        await api(`/api/rewards/${id}`, {method:'DELETE'});
+        showToast('Recompensa removida.'); renderRecompensasTab();
+      });
+    });
+  }catch(e){ showToast('Erro ao carregar recompensas: ' + e.message); }
+
+  document.getElementById('addRewardBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('newRewardName').value.trim();
+    const cost = Number(document.getElementById('newRewardCost').value);
+    if(!name || !cost){ showToast('Preencha nome e custo em pontos.'); return; }
+    await api('/api/rewards', {method:'POST', body: JSON.stringify({name, cost})});
+    showToast('Recompensa adicionada.');
+    renderRecompensasTab();
+  });
+}
+
+async function renderRelatoriosTab(){
+  const el = document.getElementById('a-relatorios');
+  try{
+    const [reports, clients] = await Promise.all([api('/api/reports'), api('/api/clients')]);
+    const confirmed = reports.filter(r=>r.status==='confirmado');
+    const liters = confirmed.reduce((s,r)=>s+(SEV_LITERS[r.sev]||0),0);
+    const top = [...clients].sort((a,b)=>b.points-a.points).slice(0,5);
+    el.innerHTML = `
+      <div class="stat-cards">
+        <div class="stat-card"><div class="n">${reports.length}</div><div class="l">denúncias recebidas</div></div>
+        <div class="stat-card"><div class="n">${confirmed.length}</div><div class="l">confirmadas</div></div>
+        <div class="stat-card"><div class="n">${liters.toLocaleString('pt-BR')}</div><div class="l">litros/dia estimados</div></div>
+        <div class="stat-card"><div class="n">${clients.length}</div><div class="l">clientes ativos</div></div>
+      </div>
+      <table><thead><tr><th>#</th><th>Cliente</th><th>Pontos</th></tr></thead><tbody>
+        ${top.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${c.points}</td></tr>`).join('') || '<tr><td colspan="3">Sem dados ainda.</td></tr>'}
+      </tbody></table>`;
+  }catch(e){ el.innerHTML = `<div class="empty">Erro: ${e.message}</div>`; }
+}
+
+// ---------- INIT ----------
+syncClient();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "olho-dagua-backend",
+  "version": "1.0.0",
+  "description": "API + banco de dados + armazenamento de fotos (demo basica) para o app Olho D'Agua",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
