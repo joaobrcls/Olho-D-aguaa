@@ -90,3 +90,5 @@ volume persistente e aponte `STORAGE_DIR` para esse diretório. O banco ficará 
 
 O `railway.json` já informa o comando `node server.js` e o health check
 `/api/health`.
+
+Deploy atualizado
